@@ -19,9 +19,6 @@
 </template>
 
 <script>
-  import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-  import { db } from "../main";
-  import { collection,addDoc } from "firebase/firestore";
   export default {
     data(){
       return {
@@ -32,22 +29,9 @@
     },
     methods: {
       signs: function () {
-        if(this.name  &&  this.mailaddress && this.password){
-          const auth = getAuth();
-          createUserWithEmailAndPassword(auth, this.mailaddress, this.password)
-          .then(() => {
-            alert('登録に成功しました');
-        })
-          .catch(() => {
-            alert('登録に失敗しました');
-        });
-          addDoc(collection(db, 'users'),{
-            name: this.name,
-            mailaddress: this.mailaddress,
-            password: this.password
-          });
-        }else{
-          alert('入力が足りていません');
+        if(this.name && this.mailaddress && this.password){
+          console.log("legs");
+          this.$store.dispatch('sendAuth', { userName: this.name, userMailaddress: this.mailaddress, userPassword: this.password });
         }
       }
     }
