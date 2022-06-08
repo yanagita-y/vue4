@@ -30,7 +30,6 @@
     methods: {
       signs: function () {
         if(this.name && this.mailaddress && this.password){
-          console.log("legs");
           this.$store.dispatch('sendAuth', { userName: this.name, userMailaddress: this.mailaddress, userPassword: this.password });
         }
       }

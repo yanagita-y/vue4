@@ -8,31 +8,30 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
-        values: []
+        users: []
     },
     getters: {
     },
     mutations: {
-        IDvalue: function( state, IDmutation){
-            state.values = IDmutation;
+        setUser: function( state, value){
+            state.users.push(value);
         }
     },
     actions: {
         sendAuth: function({commit}, {userName, userMailaddress, userPassword}){
-            console.log("tooth");
             const auth = getAuth();
             createUserWithEmailAndPassword(auth, userMailaddress, userPassword)
             .then(() => {
+                const user = {
+                    name: userName,
+                    mailaddress: userMailaddress,
+                    password: userPassword
+                };
+                addDoc(collection(db, 'users'), user);
+                commit('setUser', user)
             })
             .catch(() => {
             });
-            const IDdata = {
-                name: userName,
-                mailaddress: userMailaddress,
-                password: userPassword
-            };
-            addDoc(collection(db, 'users'), IDdata);
-            commit('IDvalue', IDdata)
         }
     }
 })
