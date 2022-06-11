@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { db } from "../main";
 import { collection,addDoc } from "firebase/firestore";
 
@@ -18,7 +18,7 @@ export default new Vuex.Store({
         }
     },
     actions: {
-        sendAuth: function({commit}, {userName, userMailaddress, userPassword}){
+        sendAuth: function({commit},{userName, userMailaddress, userPassword}){
             const auth = getAuth();
             createUserWithEmailAndPassword(auth, userMailaddress, userPassword)
             .then(() => {
@@ -29,6 +29,22 @@ export default new Vuex.Store({
                 };
                 addDoc(collection(db, 'users'), user);
                 commit('setUser', user)
+                console.log("登録成功")
+            })
+            .catch(() => {
+                console.log("登録失敗")
+            });
+        },
+        signIn: function({commit}, {userMailaddress, userPassword}){
+            const auth = getAuth();
+            signInWithEmailAndPassword(auth, userMailaddress, userPassword)
+            .then((response) => {
+                const user = {
+                    mailaddress: userMailaddress,
+                    password: userPassword
+                };
+                commit('setUser', user);
+                console.log(response)
             })
             .catch(() => {
             });
