@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { db } from "../main";
 import { setDoc,doc, getDoc } from "firebase/firestore";
 import router from '@/router';
@@ -9,7 +9,7 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
     state: {
-        user: []
+        user: null
     },
     getters: {
         user: function(state){
@@ -60,6 +60,17 @@ export default new Vuex.Store({
                 getFireStoreData(response.user.uid);
             })
             .catch(() => {
+            });
+        },
+        signOut:function({commit}){
+            const auth = getAuth();
+            signOut(auth).then(() => {
+                // Sign-out successful.
+                commit('setUser', null);
+                router.push('/');
+            }).catch((error) => {
+                console.log(error);
+                // An error happened.
             });
         }
     }
