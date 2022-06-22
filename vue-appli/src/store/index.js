@@ -34,6 +34,7 @@ export default new Vuex.Store({
                 console.log(response.user.uid);
                 const docRef = doc(db ,'users' ,response.user.uid );
                 setDoc(docRef, user);
+                user.push({"UID": response.user.uid});
                 commit('setUser', user);
                 console.log("登録成功")
             })
@@ -50,7 +51,8 @@ export default new Vuex.Store({
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         console.log("Document data:", docSnap.data());
-                        commit('setUser', docSnap.data());
+                        const user={...docSnap.data(), 'UID':response.user.uid};
+                        commit('setUser', user);
                     } else {
                         console.log("No such document!");
                     }

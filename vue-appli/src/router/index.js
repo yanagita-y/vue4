@@ -1,7 +1,10 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import Vuex from 'vuex'
+import store from '@/store/index';
 
+Vue.use(Vuex)
 Vue.use(VueRouter)
 
 const routes = [
@@ -21,6 +24,13 @@ const routes = [
   {
     path: '/dashboard',
     name: 'dashboard',
+    beforeEnter: (to, from, next) => {
+      if(!store.getters.user){
+        console.log(store.getters.user);
+        next('/');
+      }
+      next();
+    },
     component: () => import('../views/DashboardView.vue')
   }
 ]
