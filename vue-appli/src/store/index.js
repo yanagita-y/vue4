@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { db } from "../main";
-import { setDoc,doc, getDoc } from "firebase/firestore";
+import { runTransaction, setDoc, doc, getDoc, increment } from "firebase/firestore";
 import router from '@/router';
 
 Vue.use(Vuex)
@@ -10,6 +10,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     state: {
         user: null
+        // myUID: null
     },
     getters: {
         user: function(state){
@@ -17,8 +18,12 @@ export default new Vuex.Store({
         }
     },
     mutations: {
-        setUser: function( state, value){
+        setUser: function( state, value ){
             state.user = value;
+        },
+        updateUser: function( state, value ){
+            //サーバからちゃんと持って来て処理しないと怖い・・けどわからないので暫定
+            state.user.wallet = state.user.wallet - value;
         }
     },
     actions: {
@@ -34,6 +39,7 @@ export default new Vuex.Store({
                 console.log(response.user.uid);
                 const docRef = doc(db ,'users' ,response.user.uid );
                 setDoc(docRef, user);
+                user.push({"UID": response.user.uid});
                 commit('setUser', user);
                 console.log("登録成功")
             })
@@ -50,7 +56,8 @@ export default new Vuex.Store({
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         console.log("Document data:", docSnap.data());
-                        commit('setUser', docSnap.data());
+                        const user={...docSnap.data(), 'UID':response.user.uid};
+                        commit('setUser', user);
                     } else {
                         console.log("No such document!");
                     }
@@ -72,6 +79,25 @@ export default new Vuex.Store({
                 console.log(error);
                 // An error happened.
             });
+        },
+        updateWallet:async function({commit},{getValue, toUID}){
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const sfDocRef = doc(db, "users", this.getters.user.UID);
+                    const sfDoc = await transaction.get(sfDocRef);
+                    const toDocRef = doc(db, "users", toUID);
+                    const toDoc = await transaction.get(toDocRef);
+                    if (!sfDoc.exists() || !toDoc.exists ) {
+                        throw "Document does not exist!";
+                    }
+                    transaction.update(sfDocRef, {wallet: increment(-getValue)});
+                    transaction.update(toDocRef, {wallet: increment(getValue)});
+                });
+                console.log("Transaction successfully committed!");
+                commit('updateUser', getValue);
+            } catch (e) {
+                console.log("Transaction failed: ", e);
+            }
         }
     }
 })
