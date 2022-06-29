@@ -44,7 +44,7 @@
         </section>
         <footer class="modal-card-foot">
           <button @click="sendFlag=false" class="button is-link">Close</button>
-          <button v-if="errorMessage" class="button" disabled>送る</button>
+          <button v-if="errorMessage||!sendValue" class="button" disabled>送る</button>
           <button v-else class="button" @click='execDollar()'>送る</button>
         </footer>
       </div>
