@@ -14,7 +14,7 @@
         </tr>
       </table>
       <template v-if="!flag">
-        <button @click="login">ログイン</button>
+        <button class="button is-primary" @click="login">ログイン</button>
         <p @click="toggleFlag">新規登録はこちらから</p>
       </template>
       <template v-else>

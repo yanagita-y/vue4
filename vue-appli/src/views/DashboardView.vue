@@ -13,10 +13,42 @@
       </tr>
     </template>
     <button @click="logOut">ログアウト</button>
-    <div v-if="targetWallet">{{this.targetName}}さんの残高：{{this.targetWallet}}</div>
-    <td v-if="sendFlag"><input type="number" v-model.number="sendValue"></td>
-     <!-- max="$store.getters.user.wallet" min="0" -->
-    <td v-if="sendFlag"><button @click='execDollar()'>送る</button></td>
+    <div v-if="targetWallet" class="modal is-active">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <section class="modal-card-body">
+          <p class="modal-card-title">{{this.targetName}}さんの残高</p>
+          <div class="content">
+            <h1>{{this.targetWallet}}</h1>
+          </div>
+        </section>
+        <footer class="modal-card-foot">
+          <button @click="targetWallet=null" class="button is-link">Close</button>
+        </footer>
+      </div>
+    </div>
+
+    <div v-if="sendFlag" class="modal is-active">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <section class="modal-card-body">
+          <div class="content">
+            <p class="modal-card-title">あなたの残高：{{$store.getters.user.wallet}}
+              <br>送る金額
+            </p>
+            <div><input class="input" type="number" v-model.number="sendValue"></div>
+             <!-- max="$store.getters.user.wallet" min="0" -->
+            <h1>{{this.targetWallet}}</h1>
+            <p>&nbsp;<span v-if="errorMessage">{{this.errorMessage}}</span></p>
+          </div>
+        </section>
+        <footer class="modal-card-foot">
+          <button @click="sendFlag=false" class="button is-link">Close</button>
+          <button v-if="errorMessage" class="button" disabled>送る</button>
+          <button v-else class="button" @click='execDollar()'>送る</button>
+        </footer>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -33,7 +65,25 @@ export default {
       targetName: null,
       sendFlag: false,
       toTarget: null,
-      sendValue: null
+      sendValue: null,
+      errorMessage: null
+    }
+  },
+  watch: {
+    sendValue:function(newValue,oldValue){
+      console.log(newValue, oldValue);
+      if(newValue>this.$store.getters.user.wallet){
+        this.errorMessage="所持金以下の金額を入力してください。"        
+      }else if(newValue<0){
+        this.errorMessage="1以上の金額を入力してください。"
+      }else{
+        this.errorMessage=null;
+      }
+      console.log(this.errorMessage);
+      // this.sendValue=oldValue;
+      // if(newValue>this.$store.getters.user.wallet || newValue<0){
+      //   this.sendValue=oldValue;
+      // }
     }
   },
   methods: {
@@ -60,6 +110,8 @@ export default {
       console.log(this.toTarget);
       if(this.sendValue){
         this.$store.dispatch('updateWallet', { getValue: this.sendValue , toUID: this.toTarget});
+        this.sendFlag=false;
+        this.sendValue=null;
       }
     },
       //更新する
